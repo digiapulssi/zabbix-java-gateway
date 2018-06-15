@@ -56,7 +56,7 @@ RUN apk add ${APK_FLAGS_DEV} --virtual build-dependencies \
     mkdir zabbix-${ZBX_VERSION} && \
     tar zxf zabbix_sources.tar.gz -C zabbix-${ZBX_VERSION} --strip 1 && \
     cd /tmp/zabbix-${ZBX_VERSION} && \
-    zabbix_revision='pulssi' && \
+    zabbix_revision=${ZABBIX_BRANCH} && \
     sed -i "s/{ZABBIX_REVISION}/$zabbix_revision/g" include/version.h && \
     sed -i "s/{ZABBIX_REVISION}/$zabbix_revision/g" src/zabbix_java/src/com/zabbix/gateway/GeneralInformation.java && \
     ./bootstrap.sh && \
