@@ -36,7 +36,7 @@ RUN addgroup zabbix && \
 
 ARG MAJOR_VERSION=3.4
 ARG ZBX_VERSION=${MAJOR_VERSION}.10
-ARG ZABBIX_BRANCH=pulssi-trunk
+ARG ZABBIX_BRANCH=pulssi-3.4.10
 ENV ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES}
 
 LABEL org.label-schema.usage="https://www.zabbix.com/documentation/${MAJOR_VERSION}/manual/installation/containers" \
@@ -67,6 +67,7 @@ RUN apk add ${APK_FLAGS_DEV} --virtual build-dependencies \
             --prefix=/usr \
             --enable-java \
             --silent && \
+    mkdir -p src/zabbix_java/bin && \
     make -j"$(nproc)" -s && \
     mkdir -p /usr/sbin/zabbix_java/ && \
     cp -r src/zabbix_java/bin /usr/sbin/zabbix_java/ && \
