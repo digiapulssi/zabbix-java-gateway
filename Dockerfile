@@ -1,5 +1,5 @@
 FROM alpine:3.7
-LABEL maintainer="Alexey Pustovalov <alexey.pustovalov@zabbix.com>"
+LABEL maintainer="Tommi Palomäki <tommi.palomaki@digia.com>"
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -36,12 +36,12 @@ RUN addgroup zabbix && \
 
 ARG MAJOR_VERSION=3.4
 ARG ZBX_VERSION=${MAJOR_VERSION}.10
-ARG ZBX_SOURCES=svn://svn.zabbix.com/tags/${ZBX_VERSION}/
+ARG ZABBIX_BRANCH=pulssi-trunk
 ENV ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES}
 
 LABEL org.label-schema.usage="https://www.zabbix.com/documentation/${MAJOR_VERSION}/manual/installation/containers" \
       org.label-schema.version="${ZBX_VERSION}" \
-      org.label-schema.vcs-url="${ZBX_SOURCES}" \
+      org.label-schema.vcs-url="https://github.com/digiapulssi/zabbix/" \
       org.label-schema.docker.cmd="docker run --name zabbix-${ZBX_TYPE} --link zabbix-server:zabbix-server -p 10052:10052 -d zabbix-${ZBX_TYPE}:alpine-${ZBX_VERSION}"
 
 RUN apk add ${APK_FLAGS_DEV} --virtual build-dependencies \
@@ -52,9 +52,11 @@ RUN apk add ${APK_FLAGS_DEV} --virtual build-dependencies \
             subversion \
             alpine-sdk && \
     cd /tmp/ && \
-    svn --quiet export ${ZBX_SOURCES} zabbix-${ZBX_VERSION} && \
+    wget -nv -O zabbix_sources.tar.gz https://github.com/digiapulssi/zabbix/tarball/$ZABBIX_BRANCH && \
+    mkdir zabbix-${ZBX_VERSION} && \
+    tar zxf zabbix_sources.tar.gz -C zabbix-${ZBX_VERSION} --strip 1 && \
     cd /tmp/zabbix-${ZBX_VERSION} && \
-    zabbix_revision=`svn info ${ZBX_SOURCES} | grep "Last Changed Rev"|awk '{print $4;}'` && \
+    zabbix_revision='pulssi' && \
     sed -i "s/{ZABBIX_REVISION}/$zabbix_revision/g" include/version.h && \
     sed -i "s/{ZABBIX_REVISION}/$zabbix_revision/g" src/zabbix_java/src/com/zabbix/gateway/GeneralInformation.java && \
     ./bootstrap.sh && \
@@ -71,6 +73,7 @@ RUN apk add ${APK_FLAGS_DEV} --virtual build-dependencies \
     cp -r src/zabbix_java/lib /usr/sbin/zabbix_java/ && \
     rm -rf /usr/sbin/zabbix_java/lib/*.xml && \
     cd /tmp/ && \
+    rm /tmp/zabbix_sources.tar.gz && \
     rm -rf /tmp/zabbix-${ZBX_VERSION}/ && \
     apk del ${APK_FLAGS_COMMON} --purge \
             build-dependencies && \
